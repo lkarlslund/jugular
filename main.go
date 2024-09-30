@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -29,7 +30,7 @@ var (
 		Use: "prod",
 	}
 
-	network  = prodCmd.Flags().String("network", "127.0.0.1/32", "CIDR network to scan")
+	network  = prodCmd.Flags().String("network", "127.0.0.1/32", "CIDR network to scan, can be a file with many CIDRs (autodetects)")
 	parallel = prodCmd.Flags().Int("parallel", runtime.NumCPU(), "how many packets to send in parallel")
 	delay    = prodCmd.Flags().Int("delay", 0, "millisecond delay between each packet per thread")
 	url      = prodCmd.Flags().String("url", "http://localhost/printers/JUGULAR", "your http callback address")
@@ -59,11 +60,6 @@ func main() {
 func prod(cmd *cobra.Command, args []string) error {
 	queue := make(chan string, *parallel*16)
 	var wg sync.WaitGroup
-	// parse the cidr
-	cidrnet, err := cidr.Parse(*network)
-	if err != nil {
-		return err
-	}
 
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_RAW)
 	if err != nil {
@@ -75,8 +71,32 @@ func prod(cmd *cobra.Command, args []string) error {
 		FixLengths:       true,
 	}
 
+	// parse the cidr
+	var totalips int64
+	var cidrs []cidr.CIDR
+
+	if f, err := os.Open(*network); err == nil {
+		linescanner := bufio.NewScanner(f)
+		for linescanner.Scan() {
+			iprange := linescanner.Text()
+			cidrnet, err := cidr.Parse(iprange)
+			if err != nil {
+				continue
+			}
+			cidrs = append(cidrs, *cidrnet)
+			totalips += cidrnet.IPCount().Int64()
+		}
+	} else {
+		cidrnet, err := cidr.Parse(*network)
+		if err != nil {
+			return err
+		}
+		cidrs = append(cidrs, *cidrnet)
+		totalips += cidrnet.IPCount().Int64()
+	}
+
 	// create progressbar
-	pb := progressbar.New64(cidrnet.IPCount().Int64())
+	pb := progressbar.New64(totalips)
 
 	// spin up workers
 	for range *parallel {
@@ -135,10 +155,12 @@ func prod(cmd *cobra.Command, args []string) error {
 		}()
 	}
 
-	cidrnet.Each(func(ip string) bool {
-		queue <- ip
-		return true
-	})
+	for _, iprange := range cidrs {
+		iprange.Each(func(ip string) bool {
+			queue <- ip
+			return true
+		})
+	}
 
 	close(queue)
 	wg.Wait()
