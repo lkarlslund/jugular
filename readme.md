@@ -24,4 +24,21 @@ Test locally before going on a hunt, and please remember that this software can 
 
 *PLEASE NOTE* There is a 300 second delay from CUPS recieving the message to it reaches out to the URL you gave it. This is due to a hardcoded scheduling wait that is inside the CUPS software.
 
-If you get interesting results, I'd love to hear about them.
+## SUGGESTED FIXES 
+Choose one or more ... (for Ubuntu, YMMV with others - I updated + enabled ufw)
+
+### On a recent distro (Ubuntu and others), just update CUPS, it'll reconfigure it for you!
+- sudo apt update
+- sudo apt upgrade (package "cups" should be listed among those that will be updated)
+
+### Keep CUPS but enable firewalling. This disables unsolicited remote access to CUPS (be careful if you're remote):
+- sudo ufw allow ssh (if you need that, could also be http, https etc)
+- sudo ufw enable (enable firewall)
+
+### You can remove CUPS if you're not printing:
+- sudo apt remove cups
+
+### Keep CUPS but stop and disable it:
+- sudo systemctl disable --now cups
+
+*If you get interesting results, I'd love to hear about them.*
