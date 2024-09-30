@@ -2,9 +2,10 @@
 
 Use jugs to look for CUPS: an ultrafast UDP sender, that tries to tickle listening cups-browsed processes to do a HTTP callback.
 
-## Install
+## Install (Ubuntu or similar)
 
-```go install github.com/lkarlslund/jugular@main```
+```sudo apt install golang libpcap0.8-dev
+go install github.com/lkarlslund/jugular@main```
 
 ... or download the Linux x64 binary from the builds
 
