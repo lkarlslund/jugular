@@ -81,6 +81,7 @@ func prod(cmd *cobra.Command, args []string) error {
 			iprange := linescanner.Text()
 			cidrnet, err := cidr.Parse(iprange)
 			if err != nil {
+				fmt.Printf("problem parsing %v: %v\n", iprange, err)
 				continue
 			}
 			cidrs = append(cidrs, *cidrnet)
