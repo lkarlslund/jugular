@@ -18,7 +18,7 @@ jobs:
         go-version: '1.23'
 
     - name: Get prereqs
-      run: apt-get install libpcap0.8-dev 
+      run: sudo apt-get install libpcap0.8-dev 
       shell: bash
 
     - name: Build
