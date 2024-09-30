@@ -22,4 +22,6 @@ Since this software creates and writes its own packets directly to an outgoing n
 
 Test locally before going on a hunt, and please remember that this software can overwhelm your NAT firewall and other equipment (use the delay option).
 
+*PLEASE NOTE* There is a 300 second delay from CUPS recieving the message to it reaches out to the URL you gave it. This is due to a hardcoded scheduling wait that is inside the CUPS software.
+
 If you get interesting results, I'd love to hear about them.
