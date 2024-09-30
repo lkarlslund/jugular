@@ -14,7 +14,7 @@ Use jugs to look for CUPS: an ultrafast UDP sender, that tries to tickle listeni
 
 ```jugular listen --bind 0.0.0.0:80```
 
-2. Start looking prodding CUPS instances, by sending UDP packets. Note: scanning the internet is in the grey area of legality, so be careful. If you're company IT security, you can use it internally ofcourse.
+2. Start prodding CUPS instances, by sending UDP packets that announce a printer. Note: scanning the internet is in the grey area of legality, so be careful. If you're company IT security, you can use it internally ofcourse.
 
 ```jugular prod --network 10.0.0.0/8 --delay 1 --url http://yourdomain.net/printer/scanning-you --addip true --ip your-own-machine-ip```
 
