@@ -171,6 +171,9 @@ func prod(cmd *cobra.Command, args []string) error {
 }
 
 func listen(cmd *cobra.Command, args []string) error {
+	// disable gin debug mode
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
 	router.Any("/*proxyPath", func(ctx *gin.Context) {
 		realpath := ctx.Param("proxyPath")
